@@ -48,7 +48,8 @@ io.on('connection', function(socket){
 		  stream.on('data', function(event) {
 		  	console.log(event)	
 		    console.log(event.text);
-		    socket.emit('visualize', event.text)
+		    var set = [event.text, list]
+		    socket.emit('visualize', set)
 		  });
 
 		  stream.on('error', function(error) {
@@ -75,6 +76,7 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', function(){
     console.log('user disconnected');
+    // _stream.destroy();
 
   });
 

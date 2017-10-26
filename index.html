@@ -11,10 +11,16 @@
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
+
+      #board{
+        width:700px;
+        height:700px;
+      }
     </style>
   </head>
   <body>
     <ul id="messages"></ul>
+    <button onclick = 'makeChart()' style="position:absolute;">make Chart</button>
     <form action=''>
       <input id="a" autocomplete="off" />
       <input id="b" autocomplete="off" />
@@ -28,8 +34,9 @@
   <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
-  
+    
     var socket = io();
+    var board = d3.select('body').append('svg').attr('id', 'board');
     $('form').submit(function(){
       
       d3.selectAll('li').remove();
@@ -39,14 +46,43 @@
       socket.emit('chat message', 
         $('#a').val()+','+$('#b').val()+','+$('#c').val());
 
-       // $('#m').val('');
+       // $('#a').val('');
+       // $('#b').val('');
+       // $('#c').val('');
+       
        
       return false;
     });
-    socket.on('visualize', function(msg){
+
+    socket.on('visualize', function(set){
      
-      $('#messages').append($('<li>').text(msg));
+      // $('#messages').append($('<li>').text(set));
+      
+      board.append('circle').datum(set)
+      .attr('class', function(d){return d[0].includes(d[1][0])? 'tweet '+d[1][0] : d[0].includes(d[1][1])? 'tweet '+d[1][1] : 'tweet '+d[1][2]})
+
+      .attr('fill', function(d){return d[0].includes(d[1][0])? 'red' : d[0].includes(d[1][1])? 'blue' : 'pink'})
+      .attr('r', 0)
+      .attr('cx', Math.random()*700)
+      .attr('cy', Math.random()*700)
+      .transition().duration(400).ease(d3.easeSinOut).attr('r', 7).transition().duration(200).ease(d3.easeSinIn).attr('r', 5)
+
+
     });
+
+    function makeChart(){
+      var keywords = board.select('.tweet').data()[0][1]
+      console.log(keywords)
+      board.selectAll('circle.tweet.'+keywords[0])
+      .transition()
+      .attr('cy', 200)
+      board.selectAll('circle.tweet.'+keywords[1])
+      .transition()
+      .attr('cy', 400)
+      board.selectAll('circle.tweet.'+keywords[2])
+      .transition()
+      .attr('cy', 600)
+    }
  
 </script>
 </html>
