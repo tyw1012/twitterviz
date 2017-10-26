@@ -15,27 +15,39 @@
   </head>
   <body>
     <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
+    <form action=''>
+      <input id="a" autocomplete="off" />
+      <input id="b" autocomplete="off" />
+      <input id="c" autocomplete="off" /><button>Send</button>
     </form>
 
 
   </body>
 
   <script src="/socket.io/socket.io.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
-  $(function () {
+  
     var socket = io();
     $('form').submit(function(){
-      socket.emit('chat message', $('#m').val());
-      $('#m').val('');
+      
+      d3.selectAll('li').remove();
+      socket.close();
+      socket.open();
+      console.log($('#a').val()+','+$('#b').val()+','+$('#c').val())
+      socket.emit('chat message', 
+        $('#a').val()+','+$('#b').val()+','+$('#c').val());
+
+       // $('#m').val('');
+       
       return false;
     });
     socket.on('visualize', function(msg){
+     
       $('#messages').append($('<li>').text(msg));
     });
-  });
+ 
 </script>
 </html>
 

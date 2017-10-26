@@ -1,3 +1,4 @@
+var bodyParser = require('body-parser');
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
@@ -10,29 +11,63 @@ var client = new Twitter({
   access_token_secret: 'sqwoshEgM2HPvmRONG8ypcYJX9oBrMmE99dIBuvqDb3WB'
 });
 
+var _stream = {};
+
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+
+
+var jsonParser = bodyParser.json() 
+// create application/x-www-form-urlencoded parser
+var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
 
+// app.post('/go',urlencodedParser, function(req, res){
+
+// 	  res.sendFile(__dirname + '/index.html');
+// 	});
+
 io.on('connection', function(socket){
+
 
 	
 	socket.on('chat message', function(msg){
     // console.log('message: ' + msg);
 
-	    var stream = client.stream('statuses/filter', {track: msg });
-		stream.on('data', function(event) {
-		  console.log(event && event.text);
-		  socket.emit('visualize', event.text)
-		});
-		 
-		stream.on('error', function(error) {
-		  throw error;
-		});
+    	if (!isEmpty(_stream)){
+    		_stream.destroy();
+    	}
+    	
 
+    	client.stream('statuses/filter', {track: msg}, function(stream) {
+		  _stream = stream;
+		  var list = msg.split(',');
+		  stream.on('data', function(event) {
+		  	console.log(event)	
+		    console.log(event.text);
+		    socket.emit('visualize', event.text)
+		  });
+
+		  stream.on('error', function(error) {
+		    throw error;
+		  });
+		  
+		});
 		
-
+				
+						
+	 //    var stream = client.stream('statuses/filter', {track: msg });
+		// stream.on('data', function(event) {
+		//   console.log(event && event.text);
+		//   socket.emit('visualize', event.text)
+		// });
+		// client.currentTwitStream = stream; 
+		// stream.on('error', function(error) {
+		//   throw error;
+		// });
 
   });
 
@@ -40,6 +75,7 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', function(){
     console.log('user disconnected');
+
   });
 
 
@@ -49,3 +85,12 @@ io.on('connection', function(socket){
 http.listen(3000, function(){
   console.log('listening on *:3000');
 });
+
+function isEmpty(obj) {
+    for(var prop in obj) {
+        if(obj.hasOwnProperty(prop))
+            return false;
+    }
+
+    return true;
+}

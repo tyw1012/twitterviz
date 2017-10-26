@@ -9,8 +9,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.18.2",
     "express": "^4.16.2",
     "socket.io": "^2.0.4",
     "twitter": "^1.7.1"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tyw1012/twitterviz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tyw1012/twitterviz/issues"
+  },
+  "homepage": "https://github.com/tyw1012/twitterviz#readme"
 }
