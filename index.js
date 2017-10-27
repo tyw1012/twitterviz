@@ -49,7 +49,10 @@ io.on('connection', function(socket){
 		  	// console.log(event)	
 		    console.log(event.text);
 		    var set = [event.text, list]
-		    socket.emit('visualize', set)
+		    if (event.text){
+		    	socket.emit('visualize', set)
+		    }
+		    
 		  });
 
 		  stream.on('error', function(error) {

@@ -26,7 +26,7 @@
   </head>
   <body>
     <div id="main"></div>
-    <button onclick = 'makeChart()' style="position:absolute;">make Chart</button>
+    <button onclick = 'makeChart()' style="position:absolute; top:50px">make Chart</button>
     <form action=''>
       <input id="a" autocomplete="off" />
       <input id="b" autocomplete="off" />
@@ -44,6 +44,31 @@
     var height = window.innerHeight*0.8
     var socket = io();
     var board = d3.select('#main').append('svg').attr('id', 'board');
+    
+
+    //filter
+    var defs = board.append("defs");
+      var filter = defs.append("filter").attr("id","gooeyCodeFilter");
+      filter.append("feGaussianBlur")
+        .attr("in","SourceGraphic")
+        .attr("stdDeviation","10")
+        //to fix safari: http://stackoverflow.com/questions/24295043/svg-gaussian-blur-in-safari-unexpectedly-lightens-image
+        .attr("color-interpolation-filters","sRGB") 
+        .attr("result","blur");
+      filter.append("feColorMatrix")
+        .attr("class", "blurValues")
+        .attr("in","blur")
+        .attr("mode","matrix")
+        .attr("values","1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -5")
+        .attr("result","gooey");
+      filter.append("feBlend")
+        .attr("in","SourceGraphic")
+        .attr("in2","gooey")
+        .attr("operator","atop");
+    //apply filter
+    var tweetBoard = board.append('g')
+    tweetBoard.style("filter", "url(#gooeyCodeFilter)");   
+
     $('form').submit(function(){
       
       d3.selectAll('li').remove();
@@ -65,29 +90,43 @@
      
       // $('#messages').append($('<li>').text(set));
       
-      board.append('circle').datum(set)
-      .attr('class', function(d){return d[0].includes(d[1][0])? 'tweet '+d[1][0] : d[0].includes(d[1][1])? 'tweet '+d[1][1] : 'tweet '+d[1][2]})
+      tweetBoard.append('circle').datum(set)
+      .attr('class', 
+        function(d){
+
+          // console.log(d[0])
+          var classes = []
+          for (var i = 0; i<= d[1].length-1; i++) {
+            if (d[0].includes(d[1][i])){
+              classes.push(d[1][i])
+            }
+          }
+          console.log(classes)
+          return 'tweet '+classes.toString().replace(',',' ')
+        })
+
+          // return d[0].includes(d[1][0])? 'tweet '+d[1][0] : d[0].includes(d[1][1])? 'tweet '+d[1][1] : 'tweet '+d[1][2]})
 
       .attr('fill', function(d){return d[0].includes(d[1][0])? 'red' : d[0].includes(d[1][1])? 'blue' : 'pink'})
       .attr('r', 0)
       .attr('cx', Math.random()*width)
       .attr('cy', Math.random()*height)
-      .style('opacity', 0.2)
+      // .style('opacity', 0.2)
       .transition().duration(400).ease(d3.easeSinOut).attr('r', 11).transition().duration(200).ease(d3.easeSinIn).attr('r', 8)
 
 
     });
 
     function makeChart(){
-      var keywords = board.select('.tweet').data()[0][1]
+      var keywords = tweetBoard.select('.tweet').data()[0][1]
       console.log(keywords)
-      board.selectAll('circle.tweet.'+keywords[0])
+      tweetBoard.selectAll('circle.tweet.'+keywords[0])
       .transition()
       .attr('cy', 200)
-      board.selectAll('circle.tweet.'+keywords[1])
+      tweetBoard.selectAll('circle.tweet.'+keywords[1])
       .transition()
       .attr('cy', 400)
-      board.selectAll('circle.tweet.'+keywords[2])
+      tweetBoard.selectAll('circle.tweet.'+keywords[2])
       .transition()
       .attr('cy', 600)
     }
