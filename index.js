@@ -46,7 +46,7 @@ io.on('connection', function(socket){
 		  _stream = stream;
 		  var list = msg.split(',');
 		  stream.on('data', function(event) {
-		  	console.log(event)	
+		  	// console.log(event)	
 		    console.log(event.text);
 		    var set = [event.text, list]
 		    socket.emit('visualize', set)
