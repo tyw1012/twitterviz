@@ -41,7 +41,9 @@
 <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
     var width = window.innerWidth
+    var colorSpace = ['#e04941', '#f99e48', '#aedb4c', '#4eb2d3', '#426291', '#7f3f96','#3e3a3f']
     var height = window.innerHeight*0.8
+    var particle_radius = 5
     var socket = io();
     var board = d3.select('#main').append('svg').attr('id', 'board');
     var keywordInputs;
@@ -90,6 +92,8 @@
     socket.on('visualize', function(set){
      
       keywordInputs = set[1];
+
+
       
       if (include(set[0], set[1])){
 
@@ -110,12 +114,13 @@
 
           // return d[0].includes(d[1][0])? 'tweet '+d[1][0] : d[0].includes(d[1][1])? 'tweet '+d[1][1] : 'tweet '+d[1][2]})
 
-      .attr('fill', function(d){return d[0].includes(d[1][0])? 'red' : d[0].includes(d[1][1])? 'blue' : 'pink'})
+      .attr('fill', function(){generateFill(d3.select(this), keywordInputs)})
+      // .attr('fill', function(d){return d[0].includes(d[1][0])? 'red' : d[0].includes(d[1][1])? 'blue' : 'pink'})
       .attr('r', 0)
       .attr('cx', Math.random()*width)
       .attr('cy', Math.random()*height)
       // .style('opacity', 0.2)
-      .transition().duration(400).ease(d3.easeSinOut).attr('r', 11).transition().duration(200).ease(d3.easeSinIn).attr('r', 8)
+      .transition().duration(400).ease(d3.easeSinOut).attr('r', particle_radius + 3).transition().duration(150).ease(d3.easeSinIn).attr('r', particle_radius)
       }
       
 
@@ -126,14 +131,25 @@
 
       var subsets= getSubsets(keywordInputs)
       subsets.pop();
-      // console.log('subsets',subsets)
+      console.log('subsets',subsets)
+      console.log('keywordInputs', keywordInputs)
+
+        //initialize coverCircle
+        var coverCircle = tweetBoard.selectAll('.coverCircle').data(subsets)
+
+        coverCircle.exit().remove();
+        coverCircle.enter().append('circle').attr('class', 'coverCircle')
+        .attr('cx', 0)
+        .attr('cy', 0)
+        .attr('r', 0)
+
 
       for (var i = 0; i <=subsets.length-1; i++){
           var coverCircleX = Math.random()*width,
               coverCircleY = Math.random()*height;
               // console.log('subset',subsets[i])
 
-          var temp = subsets[i];
+          var temp = subsets[i].slice(0);
             temp.push('tweet');
 
           
@@ -149,29 +165,30 @@
           .attr('cx', coverCircleX)
           .attr('cy', coverCircleY)
 
-          var coverCircleR = chunk.data().length/2
+          var filtered_coverCircle = tweetBoard.selectAll('.coverCircle')
+          .filter( function(d){ 
+                      console.log(d.toString())
+                      if (chunk.data().length == 0){
+                        return false
+                      }
 
-          tweetBoard.append('circle').attr('r', 0).attr('fill', 'pink')
-          .attr('cx', coverCircleX)
-          .attr('cy', coverCircleY)
-          .transition().duration(5000)
-          .attr('r', coverCircleR+5)
+                    return (d.toString() + ',tweet').split(',').sort().toString() == chunk.property('className').baseVal.replace(/ /gi, ",").split(',').sort().toString()
+                  })
 
+          console.log('filtered_coverCircle', filtered_coverCircle)
+          if(filtered_coverCircle.data().length != 0){
 
+             filtered_coverCircle.attr('cx', coverCircleX)
+                              .attr('cy', coverCircleY)
+                              .attr('r',0)
+                              .transition()
+                              .duration(5000)
+                              .attr('r', function(){
+                                        return chunk.data().length == 0? 0 : particle_radius + chunk.data().length})
+          }
+                  
       }
-      // var keywords = tweetBoard.select('.tweet').data()[0][1]
-      // console.log(keywords)
-      // tweetBoard.selectAll('circle.tweet.'+keywords[0])
-      // .transition()
-      // .attr('cy', 200)
-      // tweetBoard.selectAll('circle.tweet.'+keywords[1])
-      // .transition()
-      // .attr('cy', 400)
-      // tweetBoard.selectAll('circle.tweet.'+keywords[2])
-      // .transition()
-      // .attr('cy', 600)
      
-
     }
   
     function include(str,arr){
@@ -199,6 +216,29 @@
         var result = [];
         fork(0, []);
         return result;
+    }
+
+    function generateFill(node, keyword){
+
+      var myClass = node.property('className').baseVal;
+      console.log(myClass)
+    
+      var temp = getSubsets(keyword)
+      temp.pop();
+
+      subsetObject_array = temp.map(function(el){return {'subset':el, 'color':''}})
+
+      for (var i = 0; i<=subsetObject_array.length-1; i++){
+          subsetObject_array[i].color = colorSpace[i] 
+      }
+      
+      console.log('ssoa', subsetObject_array)
+      var result = subsetObject_array
+                  .filter(function(el){
+                   return (el.subset.toString()+',tweet')
+                          .split(',').sort().toString().replace(/,/gi,' ') == myClass})
+                   .color;
+      return result
     }
 
 
