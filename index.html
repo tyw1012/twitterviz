@@ -44,6 +44,7 @@
     var height = window.innerHeight*0.8
     var socket = io();
     var board = d3.select('#main').append('svg').attr('id', 'board');
+    var keywordInputs;
     
 
     //filter
@@ -88,21 +89,23 @@
 
     socket.on('visualize', function(set){
      
-      // $('#messages').append($('<li>').text(set));
+      keywordInputs = set[1];
       
-      tweetBoard.append('circle').datum(set)
-      .attr('class', 
+      if (include(set[0], set[1])){
+
+        tweetBoard.append('circle').datum(set)
+        .attr('class', 
         function(d){
 
           // console.log(d[0])
           var classes = []
-          for (var i = 0; i<= d[1].length-1; i++) {
+          for (var i = d[1].length-1; i >= 0; i--) {
             if (d[0].includes(d[1][i])){
               classes.push(d[1][i])
             }
           }
-          console.log(classes)
-          return 'tweet '+classes.toString().replace(',',' ')
+          // console.log(classes)
+          return 'tweet '+classes.toString().replace(/,/gi," ")
         })
 
           // return d[0].includes(d[1][0])? 'tweet '+d[1][0] : d[0].includes(d[1][1])? 'tweet '+d[1][1] : 'tweet '+d[1][2]})
@@ -113,24 +116,92 @@
       .attr('cy', Math.random()*height)
       // .style('opacity', 0.2)
       .transition().duration(400).ease(d3.easeSinOut).attr('r', 11).transition().duration(200).ease(d3.easeSinIn).attr('r', 8)
+      }
+      
 
 
     });
 
     function makeChart(){
-      var keywords = tweetBoard.select('.tweet').data()[0][1]
-      console.log(keywords)
-      tweetBoard.selectAll('circle.tweet.'+keywords[0])
-      .transition()
-      .attr('cy', 200)
-      tweetBoard.selectAll('circle.tweet.'+keywords[1])
-      .transition()
-      .attr('cy', 400)
-      tweetBoard.selectAll('circle.tweet.'+keywords[2])
-      .transition()
-      .attr('cy', 600)
+
+      var subsets= getSubsets(keywordInputs)
+      subsets.pop();
+      // console.log('subsets',subsets)
+
+      for (var i = 0; i <=subsets.length-1; i++){
+          var coverCircleX = Math.random()*width,
+              coverCircleY = Math.random()*height;
+              // console.log('subset',subsets[i])
+
+          var temp = subsets[i];
+            temp.push('tweet');
+
+          
+          var chunk = tweetBoard
+          .selectAll('.tweet.'+subsets[i].toString().replace(/,/gi, "."))
+          .filter(function(d){
+            
+            // console.log('subset',temp.sort().toString())
+            // console.log('str', d3.select(this).property('className').baseVal.replace(/ /gi, ",").split(',').sort().toString())
+            return d3.select(this).property('className').baseVal.replace(/ /gi, ",").split(',').sort().toString() == temp.sort().toString()});
+
+          chunk.transition().duration(2500).delay(750)
+          .attr('cx', coverCircleX)
+          .attr('cy', coverCircleY)
+
+          var coverCircleR = chunk.data().length/2
+
+          tweetBoard.append('circle').attr('r', 0).attr('fill', 'pink')
+          .attr('cx', coverCircleX)
+          .attr('cy', coverCircleY)
+          .transition().duration(5000)
+          .attr('r', coverCircleR+5)
+
+
+      }
+      // var keywords = tweetBoard.select('.tweet').data()[0][1]
+      // console.log(keywords)
+      // tweetBoard.selectAll('circle.tweet.'+keywords[0])
+      // .transition()
+      // .attr('cy', 200)
+      // tweetBoard.selectAll('circle.tweet.'+keywords[1])
+      // .transition()
+      // .attr('cy', 400)
+      // tweetBoard.selectAll('circle.tweet.'+keywords[2])
+      // .transition()
+      // .attr('cy', 600)
+     
+
     }
- 
+  
+    function include(str,arr){
+
+      for (var i = 0; i <= arr.length-1; i++){
+        if (str.includes(arr[i])){
+          return true
+        }
+      }
+
+      return false
+    }
+
+    function getSubsets(array) {
+
+        function fork(i, t) {
+            if (i === array.length) {
+                result.push(t);
+                return;
+            }
+            fork(i + 1, t.concat([array[i]]));
+            fork(i + 1, t);
+        }
+
+        var result = [];
+        fork(0, []);
+        return result;
+    }
+
+
 </script>
 </html>
 
