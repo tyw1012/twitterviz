@@ -49,6 +49,12 @@
     var board = d3.select('#main').append('svg').attr('id', 'board');
     var keywordInputs;
     
+    var simulation = d3.forceSimulation()
+                     // .force('x', d3.forceX())
+                     // .force('y', d3.forceY())
+                     .force('collide', d3.forceCollide().radius(50))
+                     .on('tick', ticked)
+                     
 
     //filter
     var defs = board.append("defs");
@@ -99,7 +105,7 @@
       
       if (include(set[0], set[1])){
 
-        tweetBoard.append('circle').datum(set)
+        tweetBoard.append('circle').datum(toObject(set))
         .attr('class', 
         function(d){
 
@@ -125,11 +131,15 @@
       .transition().duration(400).ease(d3.easeSinOut).attr('r', particle_radius + 3).transition().duration(150).ease(d3.easeSinIn).attr('r', particle_radius)
       }
       
-
+      simulation.nodes(tweetBoard.selectAll('circle').data())
+      
+                // .restart();
 
     });
 
     function join_together(){
+
+      simulation.stop();
 
       var subsets= getSubsets(keywordInputs)
       subsets.pop();
@@ -193,10 +203,13 @@
                   
       }
      
+     simulation.restart();
     }
 
 
     function scatter(){
+
+      simulation.stop();
 
       tweetBoard.selectAll('.tweet')
              
@@ -211,6 +224,7 @@
       .duration(2000)
       .attr('r',0)
       
+      simulation.restart();
 
     }
   
@@ -273,6 +287,28 @@
     }
 
 
+function toObject(arr) {
+  var rv = {};
+  for (var i = 0; i < arr.length; ++i)
+    rv[i] = arr[i];
+  return rv;
+}
+
+
+function ticked() {
+
+  console.log('ticked');
+   tweetBoard
+    .selectAll('circle')
+  
+    .attr('cx', function(d) {
+      return d.x
+    })
+    .attr('cy', function(d) {
+      return d.y
+    })
+  
+}
 </script>
 </html>
 
