@@ -26,7 +26,8 @@
   </head>
   <body>
     <div id="main"></div>
-    <button onclick = 'makeChart()' style="position:absolute; top:50px">make Chart</button>
+    <button onclick = 'join_together()' style="position:absolute; top:50px">join together</button>
+    <button onclick = 'scatter()' style="position:absolute; top:80px">scattert</button>
     <form action=''>
       <input id="a" autocomplete="off" />
       <input id="b" autocomplete="off" />
@@ -78,6 +79,7 @@
       socket.close();
       socket.open();
       console.log($('#a').val()+','+$('#b').val()+','+$('#c').val())
+      
       socket.emit('chat message', 
         $('#a').val()+','+$('#b').val()+','+$('#c').val());
 
@@ -114,7 +116,7 @@
 
           // return d[0].includes(d[1][0])? 'tweet '+d[1][0] : d[0].includes(d[1][1])? 'tweet '+d[1][1] : 'tweet '+d[1][2]})
 
-      .attr('fill', function(){generateFill(d3.select(this), keywordInputs)})
+      .attr('fill', function(){return generateFill(d3.select(this), keywordInputs)})
       // .attr('fill', function(d){return d[0].includes(d[1][0])? 'red' : d[0].includes(d[1][1])? 'blue' : 'pink'})
       .attr('r', 0)
       .attr('cx', Math.random()*width)
@@ -127,7 +129,7 @@
 
     });
 
-    function makeChart(){
+    function join_together(){
 
       var subsets= getSubsets(keywordInputs)
       subsets.pop();
@@ -138,10 +140,12 @@
         var coverCircle = tweetBoard.selectAll('.coverCircle').data(subsets)
 
         coverCircle.exit().remove();
-        coverCircle.enter().append('circle').attr('class', 'coverCircle')
+        coverCircle.enter().append('circle').attr('class', 
+          function(d){return 'coverCircle '+d.toString().replace(/,/gi,' ')})
         .attr('cx', 0)
         .attr('cy', 0)
         .attr('r', 0)
+        .attr('fill',function(){return generateFill(d3.select(this), keywordInputs)})
 
 
       for (var i = 0; i <=subsets.length-1; i++){
@@ -161,7 +165,7 @@
             // console.log('str', d3.select(this).property('className').baseVal.replace(/ /gi, ",").split(',').sort().toString())
             return d3.select(this).property('className').baseVal.replace(/ /gi, ",").split(',').sort().toString() == temp.sort().toString()});
 
-          chunk.transition().duration(2500).delay(750)
+          chunk.transition().duration(2000).delay(750)
           .attr('cx', coverCircleX)
           .attr('cy', coverCircleY)
 
@@ -189,6 +193,25 @@
                   
       }
      
+    }
+
+
+    function scatter(){
+
+      tweetBoard.selectAll('.tweet')
+             
+      .transition()
+      .duration(1500)
+      .delay(750)
+      .attr('cx', function(d){return Math.random()*width})
+      .attr('cy', function(d){return Math.random()*height})
+    
+      tweetBoard.selectAll('.coverCircle')
+      .transition()
+      .duration(2000)
+      .attr('r',0)
+      
+
     }
   
     function include(str,arr){
@@ -220,9 +243,8 @@
 
     function generateFill(node, keyword){
 
-      var myClass = node.property('className').baseVal;
-      console.log(myClass)
-    
+      var myClass = node.property('className').baseVal.split(' ').sort().toString().replace(/,/gi,' ');
+      
       var temp = getSubsets(keyword)
       temp.pop();
 
@@ -231,14 +253,23 @@
       for (var i = 0; i<=subsetObject_array.length-1; i++){
           subsetObject_array[i].color = colorSpace[i] 
       }
-      
-      console.log('ssoa', subsetObject_array)
+            
       var result = subsetObject_array
                   .filter(function(el){
-                   return (el.subset.toString()+',tweet')
-                          .split(',').sort().toString().replace(/,/gi,' ') == myClass})
-                   .color;
-      return result
+
+
+                   return node.classed('coverCircle')?
+
+                          (el.subset.toString()+',coverCircle')
+                          .split(',').sort().toString().replace(/,/gi,' ') == myClass
+
+                          :(el.subset.toString()+',tweet')
+                          .split(',').sort().toString().replace(/,/gi,' ') == myClass
+
+                        })
+                   
+        
+      return result[0].color;
     }
 
 

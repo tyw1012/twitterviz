@@ -79,8 +79,10 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', function(){
     console.log('user disconnected');
-    // _stream.destroy();
-
+    
+    if (!isEmpty(_stream)){
+    		_stream.destroy();
+    	}
   });
 
 
