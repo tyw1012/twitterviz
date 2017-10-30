@@ -157,11 +157,11 @@
       console.log('keywordInputs', keywordInputs)
           console.log('object subsets',subsets)
         //initialize coverCircle
-        var coverCircle = tweetBoard.selectAll('.coverCircle').data(subsets)
+        var coverCircle = tweetBoard.selectAll('.coverCircle').data(subsets.map(function(el){return {0:el}}))
 
         coverCircle.exit().remove();
         coverCircle.enter().append('circle').attr('class', 
-          function(d){return 'coverCircle '+d.toString().replace(/,/gi,' ')})
+          function(d){return 'coverCircle '+d[0].toString().replace(/,/gi,' ')})
         .attr('cx', 0)
         .attr('cy', 0)
         .attr('r', 0)
@@ -192,12 +192,12 @@
 
           var filtered_coverCircle = tweetBoard.selectAll('.coverCircle')
           .filter( function(d){ 
-                      console.log(d.toString())
+                      console.log(d[0].toString())
                       if (chunk.data().length == 0){
                         return false
                       }
 
-                    return (d.toString() + ',tweet').split(',').sort().toString() == chunk.property('className').baseVal.replace(/ /gi, ",").split(',').sort().toString()
+                    return (d[0].toString() + ',tweet').split(',').sort().toString() == chunk.property('className').baseVal.replace(/ /gi, ",").split(',').sort().toString()
                   })
 
           console.log('filtered_coverCircle', filtered_coverCircle)
@@ -214,11 +214,11 @@
                   
       }
      
-       simulation.restart()
+      simulation.restart(); 
       simulation.nodes(tweetBoard.selectAll('.coverCircle').data())
-      simulation.on('tick', ticked)
+      simulation.on('tick', ticked).on('end', function(){simulation.restart();})
 
-     // simulation.restart();
+     
     }
 
 
