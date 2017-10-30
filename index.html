@@ -50,10 +50,16 @@
     var keywordInputs;
     
     var simulation = d3.forceSimulation()
-                     // .force('x', d3.forceX())
-                     // .force('y', d3.forceY())
-                     .force('collide', d3.forceCollide().radius(50))
-                     .on('tick', ticked)
+                     .force('x', d3.forceX(width/2).strength(0.002))
+                     .force('y', d3.forceY().strength(0.002))
+                     .force("center", d3.forceCenter(width, height))
+                     .force('collide', d3.forceCollide().radius(10))
+
+                     // .on('tick', ticked)
+                     // .on('end', function(){simulation.restart()} )            
+
+        simulation.stop();
+
                      
 
     //filter
@@ -131,21 +137,25 @@
       .transition().duration(400).ease(d3.easeSinOut).attr('r', particle_radius + 3).transition().duration(150).ease(d3.easeSinIn).attr('r', particle_radius)
       }
       
-      simulation.nodes(tweetBoard.selectAll('circle').data())
+     
       
-                // .restart();
+      
+      // simulation.restart();
 
     });
 
     function join_together(){
 
-      simulation.stop();
+
+
+      // simulation.restart();
+
 
       var subsets= getSubsets(keywordInputs)
       subsets.pop();
-      console.log('subsets',subsets)
+      
       console.log('keywordInputs', keywordInputs)
-
+          console.log('object subsets',subsets)
         //initialize coverCircle
         var coverCircle = tweetBoard.selectAll('.coverCircle').data(subsets)
 
@@ -156,6 +166,7 @@
         .attr('cy', 0)
         .attr('r', 0)
         .attr('fill',function(){return generateFill(d3.select(this), keywordInputs)})
+
 
 
       for (var i = 0; i <=subsets.length-1; i++){
@@ -203,13 +214,17 @@
                   
       }
      
-     simulation.restart();
+       simulation.restart()
+      simulation.nodes(tweetBoard.selectAll('.coverCircle').data())
+      simulation.on('tick', ticked)
+
+     // simulation.restart();
     }
 
 
     function scatter(){
 
-      simulation.stop();
+      // simulation.stop();
 
       tweetBoard.selectAll('.tweet')
              
@@ -224,7 +239,7 @@
       .duration(2000)
       .attr('r',0)
       
-      simulation.restart();
+      // simulation.restart();
 
     }
   

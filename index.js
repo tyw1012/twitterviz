@@ -3,6 +3,7 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+// var credentials = require('./twit_credentials.json');
 var Twitter = require('twitter');
 var client = new Twitter({
   consumer_key: 'DgmA29S7hRuuMensaT1LdreMj',
@@ -30,6 +31,7 @@ app.get('/', function(req, res){
 // 	  res.sendFile(__dirname + '/index.html');
 // 	});
 
+
 io.on('connection', function(socket){
 
 
@@ -45,6 +47,7 @@ io.on('connection', function(socket){
     	client.stream('statuses/filter', {track: msg}, function(stream) {
 		  _stream = stream;
 		  var list = msg.split(',');
+
 		  stream.on('data', function(event) {
 		  	// console.log(event)	
 		    console.log(event.text);
