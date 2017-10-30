@@ -11,8 +11,6 @@
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
-
-
       #main {
         width: 100%;
         height: 100%;
@@ -21,7 +19,6 @@
         width:100%;
         height:100%;
       }
-
     </style>
   </head>
   <body>
@@ -49,19 +46,6 @@
     var board = d3.select('#main').append('svg').attr('id', 'board');
     var keywordInputs;
     
-    var simulation = d3.forceSimulation()
-                     .force('x', d3.forceX(width/2).strength(0.002))
-                     .force('y', d3.forceY().strength(0.002))
-                     .force("center", d3.forceCenter(width, height))
-                     .force('collide', d3.forceCollide().radius(10))
-
-                     // .on('tick', ticked)
-                     // .on('end', function(){simulation.restart()} )            
-
-        simulation.stop();
-
-                     
-
     //filter
     var defs = board.append("defs");
       var filter = defs.append("filter").attr("id","gooeyCodeFilter");
@@ -84,7 +68,6 @@
     //apply filter
     var tweetBoard = board.append('g')
     tweetBoard.style("filter", "url(#gooeyCodeFilter)");   
-
     $('form').submit(function(){
       
       d3.selectAll('li').remove();
@@ -94,7 +77,6 @@
       
       socket.emit('chat message', 
         $('#a').val()+','+$('#b').val()+','+$('#c').val());
-
        // $('#a').val('');
        // $('#b').val('');
        // $('#c').val('');
@@ -102,19 +84,14 @@
        
       return false;
     });
-
     socket.on('visualize', function(set){
      
       keywordInputs = set[1];
-
-
       
       if (include(set[0], set[1])){
-
         tweetBoard.append('circle').datum(toObject(set))
         .attr('class', 
         function(d){
-
           // console.log(d[0])
           var classes = []
           for (var i = d[1].length-1; i >= 0; i--) {
@@ -125,9 +102,7 @@
           // console.log(classes)
           return 'tweet '+classes.toString().replace(/,/gi," ")
         })
-
           // return d[0].includes(d[1][0])? 'tweet '+d[1][0] : d[0].includes(d[1][1])? 'tweet '+d[1][1] : 'tweet '+d[1][2]})
-
       .attr('fill', function(){return generateFill(d3.select(this), keywordInputs)})
       // .attr('fill', function(d){return d[0].includes(d[1][0])? 'red' : d[0].includes(d[1][1])? 'blue' : 'pink'})
       .attr('r', 0)
@@ -137,28 +112,14 @@
       .transition().duration(400).ease(d3.easeSinOut).attr('r', particle_radius + 3).transition().duration(150).ease(d3.easeSinIn).attr('r', particle_radius)
       }
       
-     
-      
-      
-      // simulation.restart();
-
     });
-
     function join_together(){
-
-
-
-      // simulation.restart();
-
-
       var subsets= getSubsets(keywordInputs)
       subsets.pop();
-      
+      console.log('subsets',subsets)
       console.log('keywordInputs', keywordInputs)
-          console.log('object subsets',subsets)
         //initialize coverCircle
         var coverCircle = tweetBoard.selectAll('.coverCircle').data(subsets.map(function(el){return {0:el}}))
-
         coverCircle.exit().remove();
         coverCircle.enter().append('circle').attr('class', 
           function(d){return 'coverCircle '+d[0].toString().replace(/,/gi,' ')})
@@ -166,17 +127,12 @@
         .attr('cy', 0)
         .attr('r', 0)
         .attr('fill',function(){return generateFill(d3.select(this), keywordInputs)})
-
-
-
       for (var i = 0; i <=subsets.length-1; i++){
           var coverCircleX = Math.random()*width,
               coverCircleY = Math.random()*height;
               // console.log('subset',subsets[i])
-
           var temp = subsets[i].slice(0);
             temp.push('tweet');
-
           
           var chunk = tweetBoard
           .selectAll('.tweet.'+subsets[i].toString().replace(/,/gi, "."))
@@ -185,24 +141,19 @@
             // console.log('subset',temp.sort().toString())
             // console.log('str', d3.select(this).property('className').baseVal.replace(/ /gi, ",").split(',').sort().toString())
             return d3.select(this).property('className').baseVal.replace(/ /gi, ",").split(',').sort().toString() == temp.sort().toString()});
-
           chunk.transition().duration(2000).delay(750)
           .attr('cx', coverCircleX)
           .attr('cy', coverCircleY)
-
           var filtered_coverCircle = tweetBoard.selectAll('.coverCircle')
           .filter( function(d){ 
                       console.log(d[0].toString())
                       if (chunk.data().length == 0){
                         return false
                       }
-
                     return (d[0].toString() + ',tweet').split(',').sort().toString() == chunk.property('className').baseVal.replace(/ /gi, ",").split(',').sort().toString()
                   })
-
           console.log('filtered_coverCircle', filtered_coverCircle)
           if(filtered_coverCircle.data().length != 0){
-
              filtered_coverCircle.attr('cx', coverCircleX)
                               .attr('cy', coverCircleY)
                               .attr('r',0)
@@ -214,18 +165,8 @@
                   
       }
      
-      simulation.restart(); 
-      simulation.nodes(tweetBoard.selectAll('.coverCircle').data())
-      simulation.on('tick', ticked).on('end', function(){simulation.restart();})
-
-     
     }
-
-
     function scatter(){
-
-      // simulation.stop();
-
       tweetBoard.selectAll('.tweet')
              
       .transition()
@@ -239,23 +180,17 @@
       .duration(2000)
       .attr('r',0)
       
-      // simulation.restart();
-
     }
   
     function include(str,arr){
-
       for (var i = 0; i <= arr.length-1; i++){
         if (str.includes(arr[i])){
           return true
         }
       }
-
       return false
     }
-
     function getSubsets(array) {
-
         function fork(i, t) {
             if (i === array.length) {
                 result.push(t);
@@ -264,37 +199,27 @@
             fork(i + 1, t.concat([array[i]]));
             fork(i + 1, t);
         }
-
         var result = [];
         fork(0, []);
         return result;
     }
-
     function generateFill(node, keyword){
-
       var myClass = node.property('className').baseVal.split(' ').sort().toString().replace(/,/gi,' ');
       
       var temp = getSubsets(keyword)
       temp.pop();
-
       subsetObject_array = temp.map(function(el){return {'subset':el, 'color':''}})
-
       for (var i = 0; i<=subsetObject_array.length-1; i++){
           subsetObject_array[i].color = colorSpace[i] 
       }
             
       var result = subsetObject_array
                   .filter(function(el){
-
-
                    return node.classed('coverCircle')?
-
                           (el.subset.toString()+',coverCircle')
                           .split(',').sort().toString().replace(/,/gi,' ') == myClass
-
                           :(el.subset.toString()+',tweet')
                           .split(',').sort().toString().replace(/,/gi,' ') == myClass
-
                         })
                    
         
@@ -302,28 +227,12 @@
     }
 
 
-function toObject(arr) {
+    function toObject(arr) {
   var rv = {};
   for (var i = 0; i < arr.length; ++i)
     rv[i] = arr[i];
   return rv;
 }
 
-
-function ticked() {
-
-  console.log('ticked');
-   tweetBoard
-    .selectAll('circle')
-  
-    .attr('cx', function(d) {
-      return d.x
-    })
-    .attr('cy', function(d) {
-      return d.y
-    })
-  
-}
 </script>
 </html>
-
