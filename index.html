@@ -188,6 +188,8 @@
           .attr('cx', coverCircleX)
           .attr('cy', coverCircleY)
 
+          
+
           var filtered_coverCircle = tweetBoard.selectAll('.coverCircle')
           .filter( function(d){ 
                       // console.log(d[0].toString())
@@ -219,8 +221,15 @@
      
 
       tweetBoard.selectAll('.coverCircle').data(subsets_loc)
+      setTimeout(function(){
+        tweetBoard.selectAll('.tweet').attr('opacity', 0)
+
+       },3000)
+
       setTimeout(
         function(){
+
+
           var simulation = d3.forceSimulation()
              .nodes(tweetBoard.selectAll('.coverCircle').data())
              // .force('x', d3.forceX(width*2))
@@ -232,10 +241,31 @@
              .nodes(tweetBoard.selectAll('.coverCircle').data())
              .on('tick', ticked)
           
-           simulation.restart(); 
+           simulation.restart();  
+                   
 
       }, 5000)  
       
+      setTimeout(
+        function(){
+
+             tweetBoard.selectAll('.tweet')
+           .attr('cx', function(d){
+                  var myclass = d3.select(this).property('className').baseVal.split(' ').sort().toString()
+                  var match = tweetBoard.selectAll('.coverCircle').filter(function(el){return (d3.select(this).data()[0][0].toString()+',tweet').split(',').sort().toString() == myclass})
+                  
+                  return parseInt(match.attr('cx'))
+           })
+           .attr('cy', function(d){
+                  var myclass = d3.select(this).property('className').baseVal.split(' ').sort().toString()
+                  var match = tweetBoard.selectAll('.coverCircle').filter(function(el){return (d3.select(this).data()[0][0].toString()+',tweet').split(',').sort().toString() == myclass})
+                  
+                  return parseInt(match.attr('cy'))
+           })
+
+        }
+
+        ,6000)
     }
 
 
@@ -244,7 +274,7 @@
       // simulation.stop();
 
       tweetBoard.selectAll('.tweet')
-             
+       .attr('opacity', 1)       
       .transition()
       .duration(1500)
       .delay(750)
@@ -340,6 +370,7 @@ function ticked() {
       return d.y
     })
   
+ 
 }
 </script>
 </html>
